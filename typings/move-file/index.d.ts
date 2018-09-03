@@ -1,5 +1,3 @@
-export = moveFile;
-
 declare function moveFile(
   source: string,
   destination: string,
@@ -13,3 +11,5 @@ declare namespace moveFile {
     overwrite?: boolean;
   }
 }
+
+export = moveFile;

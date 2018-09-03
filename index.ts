@@ -4,19 +4,23 @@ import makeDir from 'make-dir';
 import moveFile from 'move-file';
 import ndPath from 'path';
 
-export type TProgressData = {
+export type ProgressData = {
   completedItems: number;
   totalItems: number;
 };
 
-export type TProgressCallback = (data: TProgressData) => void;
+export type ProgressCallback = (data: ProgressData) => void;
 
 function getPath(path: string, dest: string) {
   const { dir, base } = ndPath.parse(path);
   return ndPath.join(dest, dir, base);
 }
 
-export default async (src: string[], dest: string, cb?: TProgressCallback) => {
+module.exports = async (
+  src: string | string[],
+  dest: string,
+  cb?: ProgressCallback
+) => {
   let paths = await globby(src, {
     markDirectories: true,
     onlyFiles: false
@@ -51,6 +55,7 @@ export default async (src: string[], dest: string, cb?: TProgressCallback) => {
   const dirs = emptyDirs.map(path => makeDir(getPath(path, dest)));
 
   await Promise.all<void | string>([...files, ...dirs]);
+
   await del(src, { force: true });
 
   if (totalEmptyDirs > 0 && cb) {
