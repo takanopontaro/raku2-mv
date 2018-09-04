@@ -4,7 +4,7 @@ import makeDir from 'make-dir';
 import moveFile from 'move-file';
 import ndPath from 'path';
 
-import { ProgressCallback, ProgressData } from './index.d';
+import { Options, ProgressCallback, ProgressData } from './index.d';
 
 function getPath(path: string, dest: string) {
   const { dir, base } = ndPath.parse(path);
@@ -14,7 +14,7 @@ function getPath(path: string, dest: string) {
 module.exports = async (
   src: string | string[],
   dest: string,
-  options?: any,
+  options?: Options | null,
   cb?: ProgressCallback
 ) => {
   let paths = await globby(src, {
