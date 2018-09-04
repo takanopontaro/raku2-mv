@@ -14,7 +14,7 @@ function getPath(path: string, dest: string) {
 module.exports = async (
   src: string | string[],
   dest: string,
-  options?: {},
+  options?: any,
   cb?: ProgressCallback
 ) => {
   let paths = await globby(src, {
@@ -44,7 +44,9 @@ module.exports = async (
 
   const files = paths.map(path =>
     (async () => {
-      await moveFile(path, getPath(path, dest));
+      const realPath =
+        options && options.cwd ? ndPath.resolve(options.cwd, path) : path;
+      await moveFile(realPath, getPath(path, dest));
       handleProgress();
     })()
   );
