@@ -4,12 +4,7 @@ import makeDir from 'make-dir';
 import moveFile from 'move-file';
 import ndPath from 'path';
 
-export type ProgressData = {
-  completedItems: number;
-  totalItems: number;
-};
-
-export type ProgressCallback = (data: ProgressData) => void;
+import { ProgressCallback, ProgressData } from './index.d';
 
 function getPath(path: string, dest: string) {
   const { dir, base } = ndPath.parse(path);
@@ -58,10 +53,12 @@ module.exports = async (
 
   await del(src, { force: true });
 
-  if (totalEmptyDirs > 0 && cb) {
-    cb({
-      completedItems: completedItems + totalEmptyDirs,
-      totalItems
-    });
-  }
+  const data: ProgressData = {
+    completedItems: completedItems + totalEmptyDirs,
+    totalItems
+  };
+
+  if (totalEmptyDirs > 0 && cb) cb(data);
+
+  return data;
 };
