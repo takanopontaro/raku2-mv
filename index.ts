@@ -14,9 +14,11 @@ function getPath(path: string, dest: string) {
 module.exports = async (
   src: string | string[],
   dest: string,
+  options?: {},
   cb?: ProgressCallback
 ) => {
   let paths = await globby(src, {
+    ...options,
     markDirectories: true,
     onlyFiles: false
   });
