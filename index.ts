@@ -6,17 +6,14 @@ import ndPath from 'path';
 
 import { Options, ProgressCallback, ProgressData } from './index.d';
 
-function getPath(path: string, dest: string) {
-  const { dir, base } = ndPath.parse(path);
-  return ndPath.join(dest, dir, base);
-}
-
 module.exports = async (
   src: string | string[],
   dest: string,
   options?: Options | null,
   cb?: ProgressCallback
 ) => {
+  const cwd = (options && options.cwd) || null;
+
   let paths = await globby(src, {
     ...options,
     markDirectories: true,
@@ -42,20 +39,25 @@ module.exports = async (
     if (cb) cb({ completedItems, totalItems });
   };
 
+  const resolve = (path: string) => (cwd ? ndPath.resolve(cwd, path) : path);
+
+  const getDestPath = (path: string, dest: string) => {
+    const { dir, base } = ndPath.parse(resolve(path));
+    return ndPath.join(resolve(dest), dir, base);
+  };
+
   const files = paths.map(path =>
     (async () => {
-      const realPath =
-        options && options.cwd ? ndPath.resolve(options.cwd, path) : path;
-      await moveFile(realPath, getPath(path, dest));
+      await moveFile(resolve(path), getDestPath(path, dest));
       handleProgress();
     })()
   );
 
-  const dirs = emptyDirs.map(path => makeDir(getPath(path, dest)));
+  const dirs = emptyDirs.map(path => makeDir(getDestPath(path, dest)));
 
   await Promise.all<void | string>([...files, ...dirs]);
 
-  await del(src, { force: true });
+  await del(src, { force: true, cwd: cwd || process.cwd() });
 
   const data: ProgressData = {
     completedItems: completedItems + totalEmptyDirs,
